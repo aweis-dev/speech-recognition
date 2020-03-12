@@ -32,14 +32,15 @@ class db():
 
         return tensordata
 
-    def loadaudio(self):
-        # print(str(self.tensordata[0,0].numpy(), "utf-8"))
-        path = "../data/train/audio/" + str(self.tensordata[0,0].numpy(), "utf-8") + "/" + str(self.tensordata[0,1].numpy(), "utf-8")
-        # print(path)
-        fs, data = wavfile.read(path)
-        print(fs)
-        plt.plot(data)
-        plt.show()
-        # audio = tf.audio.decode_wav(kek)
-        # print(audio)
+    def loadaudio(self, index_arr): # index_arr
+        index_len = len(index_arr)
+        audio_tensor = tf.Variable(tf.zeros([index_len, 16000], tf.int32))
+        for index in index_arr:
+            path = "../data/train/audio/" + str(self.tensordata[index,0].numpy(), "utf-8") + "/" + str(self.tensordata[index,1].numpy(), "utf-8")
+            fs, data = wavfile.read(path)
+            audio_tensor[index].assign(data)
+        # print(fs)
+        # audio_tensor = tf.Variable(data)
+        print(audio_tensor)
+        return audio_tensor
 
