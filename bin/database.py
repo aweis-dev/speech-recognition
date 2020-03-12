@@ -1,31 +1,35 @@
-import numpy as np
-import torch
-import torchaudio
-import pandas as pd
-import re
+import tensorflow as tf
 
-
-class Database:
+class db():
     def __init__(self):
-        self.path = "../data/train.tsv"
-        self.df = pd.read_csv(self.path, sep="\t")
-        self.sentences = self.df["sentence"]
-        self.paths = self.df["path"]
+        self.path = "C:/Machine Learning/speech-recognition/data/train/testing_list.txt"
+        self.tensordata = self.filenames()
 
-    def preprocess_sentences(self):
-        self.df["sentence"] = self.df["sentence"].apply(lambda x: x.lower())
-        self.df["sentence"] = self.df["sentence"].apply(lambda x: re.sub("[\\\"\'!?.\/]", "", x))
-        self.df["sentence"] = self.df["sentence"].apply(lambda x: x.split())
-        self.sentences = self.df["sentence"]
-        return None
+    def filenames(self):
+        data = open(self.path, "r")
+        length = sum(1 for l in data)
+        data.close()
+        tensordata = tf.Variable(tf.zeros([length, 2], tf.string))
 
-    def load_sound(self, index):
-        test_audio = torchaudio.load(audio_path + self.paths[index])
-        return test_audio
+        data = open(self.path, "r")
+        i = 0
+        for line in data:
+            z = line.split(sep = '/')
+            z[1] = z[1].rstrip('\n')
+            tensordata[i].assign(z)
+            i += 1
 
+        # print(tensordata)
 
-if __name__ == "__main__":
-    audio_path = "../data/clips/"
-    db = Database()
-    print(db.load_sound(2)[0].size())
-    print(db.load_sound(2))
+        # Pisser muss weg
+        data.close()
+
+        return tensordata
+
+    def loadaudio(self):
+        path = "C:/Machine Learning/speech-recognition/data/train/audio/" + self.tensordata[0, 0] \
+               + "/" + self.tensordata[0, 1]
+        with open(path, "rb") as kek:
+            audio = tf.audio.decode_wav(kek)
+            print(audio)
+
