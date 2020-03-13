@@ -1,6 +1,8 @@
-import tensorflow as tf
-from scipy.io import wavfile
+import numpy as np
 import matplotlib.pyplot as plt
+import tensorflow as tf
+# import tensorflow_transform as tft
+from scipy.io import wavfile
 
 class db():
     def __init__(self):
@@ -39,5 +41,22 @@ class db():
         for index in index_arr:
             true_value_tensor[index].assign(self.tensordata[index, 0])
         return true_value_tensor
+
+    def normalizeWithMoments(self, x):
+        offset = 0.0
+        scale = 1.0
+        epsilon = 1e-15
+        mean, variance = tf.nn.moments(x, axes=[0, 1])
+        x_normed = tf.nn.batch_normalization(x, mean, variance, offset, scale, epsilon)
+        return x_normed
+
+    def preprocessAudio(self, audio_tensor):
+        data = tf.dtypes.cast(audio_tensor, dtype=tf.float64)
+        signal = db.normalizeWithMoments(self, data)
+
+        data = tf.dtypes.cast(signal, dtype=tf.complex64)
+        fft_audio = tf.abs(tf.signal.fft(data))
+        signal_fft = db.normalizeWithMoments(self, fft_audio)
+        return signal, signal_fft
 
 
