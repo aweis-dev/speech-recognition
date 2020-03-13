@@ -11,6 +11,7 @@ class Model():
         self.loss_function = tf.keras.losses.CategoricalCrossentropy() # uses one hot encoding! 
         self.optimizer = tf.keras.optimizers.Adam()
         self.db = database.db()
+        self.network = tfnetwork.Network()
 
     def train(self):
         return None
