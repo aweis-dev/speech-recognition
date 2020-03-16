@@ -9,11 +9,11 @@ class db():
         self.path = "../data/train/testing_list.txt"
         self.length = 0
         self.tensordata = self.filenames()
-        self.dict = {"Yes":0, "No":1, "Up":2, "Down":3, "Left":4, "Right":5, "On":6, "Off":7,
-                     "Stop":8, "Go":9, "Zero":10, "One":11, "Two":12, "Three":13,
-                     "Four":14, "Five":15, "Six":16, "Seven":17, "Eight":18, "Nine":19,
-                     "Bed":20, "Bird":21, "Cat":22, "Dog":23, "Happy":24,
-                     "House":25, "Marvin":26, "Sheila":27, "Tree":28, "Wow":29}
+        self.dict = {"yes":0, "no":1, "up":2, "down":3, "left":4, "right":5, "on":6, "off":7,
+                     "stop":8, "go":9, "zero":10, "one":11, "two":12, "three":13,
+                     "four":14, "five":15, "six":16, "seven":17, "eight":18, "nine":19,
+                     "bed":20, "bird":21, "cat":22, "dog":23, "happy":24,
+                     "house":25, "marvin":26, "sheila":27, "tree":28, "wow":29}
 
     def filenames(self):
         data = open(self.path, "r")
@@ -34,23 +34,34 @@ class db():
         return tensordata
 
     def loadAudio(self, index_arr): # index_arr
+        index_arr = list(index_arr)
         index_len = len(index_arr)
-        audio_tensor = tf.Variable(tf.zeros([index_len, 16000], tf.int32))
+        i = 0
+        audio_tensor = tf.Variable(tf.zeros([index_len, 16000], dtype=tf.int16))
         for index in index_arr:
             path = "../data/train/audio/" + str(self.tensordata[index,0].numpy(), "utf-8") + "/" \
                    + str(self.tensordata[index,1].numpy(), "utf-8")
             fs, data = wavfile.read(path)
-            audio_tensor[index].assign(data)
+            temp = tf.Variable(tf.zeros(16000, dtype=tf.int16))
+            temp[0:len(data)].assign(tf.Variable(data))
+            data = temp
+            audio_tensor[i].assign(data)
+            i += 1
+        # print(audio_tensor)
         return audio_tensor
 
     def getTrueValues(self, index_arr):
         index_len = len(index_arr)
-        true_value_tensor = tf.Variable(tf.zeros([index_len, 30], tf.float32))
+        true_value_tensor = tf.Variable(tf.zeros([index_len, 30], dtype=tf.float32))
+        i = 0
         for index in index_arr:
-            word_index = self.dict[self.tensordata[index, 0]]
-            onehotencoding = tf.zeros([30])
-            onehotencoding[word_index] = 1
-            true_value_tensor[index].assign(onehotencoding)
+            word_index = self.dict[str(self.tensordata[index, 0].numpy(), "utf-8")]
+            # print(word_index)
+            onehotencoding = tf.Variable(tf.zeros([30]), dtype=tf.float32)
+            onehotencoding[word_index].assign(1.)
+            true_value_tensor[i].assign(onehotencoding)
+            i += 1
+        # print(true_value_tensor)
         return true_value_tensor
 
     def normalizeWithMoments(self, x):
