@@ -26,4 +26,4 @@ def make_plot(audio, audio_fft):
 
 if __name__ == "__main__":
     model = model.Model()
-    model.train(500, 100)
+    model.train(200, 600, lr=0.0001)

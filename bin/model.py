@@ -15,10 +15,16 @@ class Model():
         self.db = database.db()
         self.network = tfnetwork.Network()
 
-    def train(self, epoch, batchsize):
-        # checkpoint_path = "params/cp.ckpt"
-        # checkpoit_dir = os.path.dirname(checkpoint_path)
-        # cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path, save_weights_only=True)
+    def train(self, epoch, batchsize, lr=0.001):
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=lr, beta_1=0.95, beta_2=0.999, epsilon=1e-7)
+        ckpt = tf.train.Checkpoint(step=tf.Variable(1), optimizer=self.optimizer, net=self.network)
+        manager = tf.train.CheckpointManager(ckpt, "./params", max_to_keep=3)
+
+        ckpt.restore(manager.latest_checkpoint)
+        if manager.latest_checkpoint:
+            print("Restored from {}".format(manager.latest_checkpoint))
+        else:
+            print("Starting new training instance.")
         train_loss = tf.keras.metrics.Mean(name="train_loss")
         train_accuracy = tf.keras.metrics.CategoricalAccuracy(name="train_accuracy")
         for i in range(epoch):
@@ -29,16 +35,16 @@ class Model():
             with tf.GradientTape() as tape:
                 output = self.network(signal, signal_fft)
                 loss = self.loss_function(true_values, output)
-                # print(db.dict[output])
-                # print(output[0])
-                # print(true_values[0])
             train_loss(loss)
             train_accuracy(true_values, output)
             gradients = tape.gradient(loss, self.network.trainable_variables)
             self.optimizer.apply_gradients(zip(gradients, self.network.trainable_variables))
             print("Epoch:", i, "Accuracy: ",  float(train_accuracy.result().numpy())*100, "%")
+            ckpt.step.assign_add(1)
             train_loss.reset_states()
             train_accuracy.reset_states()
+            if int(ckpt.step) % 10 == 0:
+                save_path = manager.save()
 
         # To Do
         return None
