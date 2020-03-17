@@ -27,14 +27,18 @@ class Model():
             print("Starting new training instance.")
         train_loss = tf.keras.metrics.Mean(name="train_loss")
         train_accuracy = tf.keras.metrics.CategoricalAccuracy(name="train_accuracy")
+        mirrored_strategy = tf.distributed.MirroredStrategy()
         for i in range(epoch):
             rndmbatch = np.random.random_integers(0, high=self.db.length-1, size=batchsize)
             audio_tensor = self.db.loadAudio(rndmbatch)
             true_values = self.db.getTrueValues(rndmbatch)
             signal, signal_fft = self.db.preprocessAudio(audio_tensor)
-            with tf.GradientTape() as tape:
-                output = self.network(signal, signal_fft)
-                loss = self.loss_function(true_values, output)
+            # signal = tf.Variable(signal)
+            # signal_fft = tf.Variable(signal_fft)
+            with mirrored_strategy.scope()
+                with tf.GradientTape() as tape:
+                    output = self.network(signal, signal_fft)
+                    loss = self.loss_function(true_values, output)
             train_loss(loss)
             train_accuracy(true_values, output)
             gradients = tape.gradient(loss, self.network.trainable_variables)
