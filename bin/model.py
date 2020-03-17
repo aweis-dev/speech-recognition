@@ -28,7 +28,7 @@ class Model():
         train_loss = tf.keras.metrics.Mean(name="train_loss")
         train_accuracy = tf.keras.metrics.CategoricalAccuracy(name="train_accuracy")
         for i in range(epoch):
-            rndmbatch = np.random.random_integers(0, high=self.db.length, size=batchsize)
+            rndmbatch = np.random.random_integers(0, high=self.db.length-1, size=batchsize)
             audio_tensor = self.db.loadAudio(rndmbatch)
             true_values = self.db.getTrueValues(rndmbatch)
             signal, signal_fft = self.db.preprocessAudio(audio_tensor)
