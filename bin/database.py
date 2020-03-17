@@ -9,6 +9,8 @@ class db():
         self.colab = colab
         if self.colab == False:
             self.path = "../data/train/list.txt"
+        else:
+            self.path = "../data/train/list.txt"
         self.length = 0
         self.tensordata = self.filenames()
         self.dict = {"yes":0, "no":1, "up":2, "down":3, "left":4, "right":5, "on":6, "off":7,
@@ -42,6 +44,9 @@ class db():
         audio_tensor = tf.Variable(tf.zeros([index_len, 16000], dtype=tf.int16))
         for index in index_arr:
             if self.colab == False:
+                path = "../data/train/audio/" + str(self.tensordata[index,0].numpy(), "utf-8") + "/" \
+                    + str(self.tensordata[index,1].numpy(), "utf-8")
+            else:
                 path = "../data/train/audio/" + str(self.tensordata[index,0].numpy(), "utf-8") + "/" \
                     + str(self.tensordata[index,1].numpy(), "utf-8")
             fs, data = wavfile.read(path)
